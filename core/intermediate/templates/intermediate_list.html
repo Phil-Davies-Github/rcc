@@ -1,0 +1,18 @@
+{% block content %}
+    <h3>Distinct Object2</h3>
+    {% if distinct_object2_instances %}
+        {% for obj in distinct_object2_instances %}
+            <ul>
+                <li>Object: {{obj.object2_id}}</li>
+                {% for related_obj in related_object2_instances %}
+                    {% if related_obj.id == obj.object2_id %}
+                        <a class="text-reset" href="{% url 'intermediate:update_intermediate' object2_id=obj.object2_id %}">Name: {{ related_obj.name }} Date: {{ related_obj.date }}</a>    
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% endfor %}      
+    {% else %}
+        <p>No Objects found.</p>
+    {% endif %}
+
+{% endblock content %}

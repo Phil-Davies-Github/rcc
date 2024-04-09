@@ -1,0 +1,16 @@
+# Django #
+*.log
+*.pyc
+*.exe
+__pycache__
+*.py[cod]
+db.sqlite3
+# Python
+venv/*
+# VSCode #
+.vscode/*
+
+events/migrations/*
+blog/
+bookstore/
+yachts/migrations/*

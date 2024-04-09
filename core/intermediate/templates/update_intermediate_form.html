@@ -1,0 +1,28 @@
+{% block content %}
+    <form method="post" enctype="multipart/form-data"> 
+        {% csrf_token %}
+        <table>
+            <thead>
+              <tr>
+                <th>Object1 Name</th>
+                <th>Field 1</th>
+                <th>Field 2</th>
+                <th>Field 3</th>
+                <th>Field 4</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for form in formset %}
+               <tr>
+                  <td><input type="text" name="{{ form.object1_name.name }}" value="{{ form.object1_name.value }}"></td>
+                  <td><input type="text" name="{{ form.field1.name }}" value="{{ form.field1.value }}"></td>
+                  <td><input type="text" name="{{ form.field2.name }}" value="{{ form.field2.value }}"></td>
+                  <td><input type="text" name="{{ form.field3.name }}" value="{{ form.field3.value }}"></td>
+                  <td><input type="text" name="{{ form.field4.name }}" value="{{ form.field4.value }}"></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Save Changes</button>
+    </form>
+{% endblock content %}

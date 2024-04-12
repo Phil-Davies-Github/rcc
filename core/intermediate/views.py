@@ -6,15 +6,17 @@ from django.views.generic.detail import SingleObjectMixin
 from intermediate.models import Intermediate, Object1, ItemModel
 from .forms import IntermediateModelForm, IntermediateFormSet, ItemModelForm
 from django.forms import modelformset_factory, formset_factory
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 
 # Test Object View
 class ItemUpdateView(FormView):
     # specify what needs to be used
     template_name = 'formset_view.html'
     # Each form is associate with an instance of the ItemModel
-    form_class = formset_factory(
-        ItemModelForm,
+    # Only modelformsets have a save method so create a modelformset
+    form_class = modelformset_factory(
+        ItemModel,
+        form = ItemModelForm,
         extra = 2
     )
     success_url = 'success'
@@ -24,8 +26,18 @@ class ItemUpdateView(FormView):
         context['item_formset'] = self.form_class()
         return context
     
+    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        formset = self.form_class(request.POST)
+        print(formset)
+        if formset.is_valid():
+            instance = formset.save()
+            # Redirect user to url after save
+        else: 
+            return self.render_to_response({'item_formset': formset})
+
+
     def form_valid(self, form):
-        form.save()
+        
         return super().form_valid(form)
     
     # Rerender the form with error

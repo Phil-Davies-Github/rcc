@@ -7,8 +7,14 @@ from intermediate.models import Intermediate, Object1, ItemModel
 from .forms import IntermediateModelForm, IntermediateFormSet, ItemModelForm
 from django.forms import modelformset_factory, formset_factory
 from django.http import HttpRequest, HttpResponse
+from django.contrib import messages
+from django.shortcuts import redirect
 
 # Test Object View
+class DeleteItem(FormView):
+    pass
+
+
 class ItemUpdateView(FormView):
     # specify what needs to be used
     template_name = 'formset_view.html'
@@ -31,7 +37,9 @@ class ItemUpdateView(FormView):
         print(formset)
         if formset.is_valid():
             instance = formset.save()
+            messages.success(request, "Item Saved to database")
             # Redirect user to url after save
+            return redirect(request.path_info)
         else: 
             return self.render_to_response({'item_formset': formset})
 

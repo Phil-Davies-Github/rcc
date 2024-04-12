@@ -1,8 +1,36 @@
+from typing import Any
+from django.forms.forms import BaseForm
 from django.shortcuts import render
 from django.views.generic import FormView, ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
-from intermediate.models import Intermediate, Object1
-from .forms import IntermediateModelForm, IntermediateFormSet
+from intermediate.models import Intermediate, Object1, ItemModel
+from .forms import IntermediateModelForm, IntermediateFormSet, ItemModelForm
+from django.forms import modelformset_factory, formset_factory
+from django.http import HttpResponse
+
+# Test Object View
+class ItemUpdateView(FormView):
+    # specify what needs to be used
+    template_name = 'formset_view.html'
+    # Each form is associate with an instance of the ItemModel
+    form_class = formset_factory(
+        ItemModelForm,
+        extra = 2
+    )
+    success_url = 'success'
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['item_formset'] = self.form_class()
+        return context
+    
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+    
+    # Rerender the form with error
+    def form_invalid(self, form) -> HttpResponse:
+        return self.render_to_response(self.get_context_data(form=form))  
 
 # Create your views here.
 class Index(TemplateView):
@@ -99,3 +127,34 @@ class IntermediateUpdateView(FormView):
         # Redirect or show success message
         return super().form_valid(form)
     '''
+
+# Function Based Views
+def submit_view(request):
+    initial_form_data = {
+        'name': 'Rock',
+        'estimated_price': 0,
+    }
+    if request.method=="GET":
+        item_form = ItemModelForm(initial=initial_form_data)
+    elif request.method=="POST":
+        item_form = ItemModelForm(data=request.POST,
+                                     initial=initial_form_data)
+        if item_form.is_valid() and item_form.has_changed():
+            name = item_form.cleaned_data['name']
+            estimated_price = item_form.cleaned_data['estimated_price']
+            message = f'Thanks for your submission of {name}, \
+                        with an estimated price of {estimated_price}!'
+            return HttpResponse(message)
+
+    context = {
+        'item_form': item_form
+    }
+    return render(request, 'submit.html', context)
+
+def formset_submit_view(request):
+    ItemFormSet = formset_factory(ItemModelForm, extra=2)
+    item_formset = ItemFormSet()
+    context = {
+        'item_formset': item_formset
+    }
+    return render(request, 'formset_view.html', context)

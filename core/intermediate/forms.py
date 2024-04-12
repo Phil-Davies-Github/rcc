@@ -1,7 +1,14 @@
 #from django.forms import ModelForm, BaseInlineFormSet, modelformset_factory
 from django.shortcuts import get_object_or_404
-from .models import Intermediate, Object1
+from .models import Intermediate, Object1, ItemModel
 from django import forms
+
+# Test ModelForm
+class ItemModelForm(forms.ModelForm):
+    class Meta:
+        model = ItemModel
+        fields = ['name', 'estimated_price']
+
 
 # Straightforward formset which handles multiple instances automatically generating a formset based on model
 # and form class

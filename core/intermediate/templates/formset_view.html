@@ -1,0 +1,16 @@
+<body>
+    <form method='POST'>
+      {% csrf_token %}
+      {{ item_formset.management_form }}
+      
+      {% for item_form in item_formset %}
+        <h2>Form number {{ forloop.counter0 }}</h2>
+        <div>
+            {{ item_form.as_p }}
+        </div>
+        <hr>
+      {% endfor %}
+      <input type='submit' value="Submit item">
+    </form>
+</body>
+</html>

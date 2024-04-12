@@ -2,6 +2,11 @@ from django import forms
 from django.db import models
 
 # Create your models here.
+# Basic Test Model
+class ItemModel(models.Model):
+    name = models.CharField(max_length=100)
+    estimated_price = models.IntegerField()
+
 class Object1(models.Model):
     name = models.CharField(max_length = 100)
     number = models.SmallIntegerField()

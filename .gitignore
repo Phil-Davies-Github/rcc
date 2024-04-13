@@ -6,7 +6,7 @@ __pycache__
 *.py[cod]
 db.sqlite3
 # Python
-venv/*
+.venv/*
 # VSCode #
 .vscode/*
 

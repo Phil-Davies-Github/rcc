@@ -3,12 +3,33 @@ from django.shortcuts import get_object_or_404
 from .models import Intermediate, Object1, ItemModel
 from django import forms
 
+# Custom field typw which accepts hh:mm:ss or a float
+class DurationField(forms.Field):
+    def to_python(self, value):
+        if value in forms.fields.EMPTY_VALUES:
+            return None
+
+        # If it's already a int, assume it's in seconds
+        if isinstance(value, int):
+            return value
+
+        # Try parsing as hours:minutes:seconds
+        try:
+            parts = value.split(":")
+            hours = int(parts[0])
+            minutes = int(parts[1])
+            seconds = int(parts[2])
+            total_seconds = hours * 3600 + minutes * 60 + seconds
+            return total_seconds
+        except (ValueError, IndexError):
+            raise forms.ValidationError("Invalid duration format. Please use hh:mm:ss or seconds as a integer.")
+
 # Test ModelForm
 class ItemModelForm(forms.ModelForm):
     class Meta:
         model = ItemModel
-        fields = ['name', 'estimated_price']
-
+        fields = ['name', 'estimated_price', 'elapsed_time_seconds']
+        duration = DurationField()
 
 # Straightforward formset which handles multiple instances automatically generating a formset based on model
 # and form class

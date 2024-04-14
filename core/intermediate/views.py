@@ -36,8 +36,13 @@ class ItemUpdateView(FormView):
         formset = self.form_class(request.POST)
         print(formset)
         if formset.is_valid():
-            instance = formset.save()
-            messages.success(request, "Item Saved to database")
+            # Process each form in the formset
+            for form in formset:
+                name = form.cleaned_data['name']
+                estimated_price = form.cleaned_data['estimated_price']
+                elapsed_time = form.cleaned_data['duration']
+                instance = formset.save()
+                messages.success(request, "Item Saved to database")
             # Redirect user to url after save
             return redirect(request.path_info)
         else: 

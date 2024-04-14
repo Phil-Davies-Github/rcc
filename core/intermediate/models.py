@@ -8,17 +8,17 @@ class DurationField(models.Field):
     def from_db_value(self, value, expression, connection):
         if value is None:
             return None
-        return int(value)
+        return float(value)
 
     def to_python(self, value):
         if value is None:
             return None
-        return int(value)
+        return float(value)
 
     def get_prep_value(self, value):
         if value is None:
             return None
-        return int(value)
+        return float(value)
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)

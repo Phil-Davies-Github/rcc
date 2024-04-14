@@ -24,12 +24,14 @@ class DurationField(forms.Field):
         except (ValueError, IndexError):
             raise forms.ValidationError("Invalid duration format. Please use hh:mm:ss or seconds as a integer.")
 
-# Test ModelForm
+# Create a custom form which 
 class ItemModelForm(forms.ModelForm):
+    elapsed_time = DurationField()
+
     class Meta:
         model = ItemModel
         fields = ['name', 'estimated_price', 'elapsed_time_seconds']
-        duration = DurationField()
+        
 
 # Straightforward formset which handles multiple instances automatically generating a formset based on model
 # and form class

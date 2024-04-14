@@ -13,8 +13,22 @@
       {% for item_form in item_formset %}
         
         <div>
-            <strong>Form number {{ forloop.counter0 }} | </strong>
-            {{ item_form.as_table }}
+            <table>
+                <thead>
+                    <tr>
+                      <th scope="col">Form number</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Estimated Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                      <th scope="row">{{ forloop.counter0 }}</th>
+                      <td>{{ item_form.name }}</td>
+                      <td>{{ item_form.estimated_price }}</td>
+                    </tr>   
+                </tbody>
+            </table>
         </div>
         <hr>
       {% endfor %}

@@ -27,7 +27,7 @@ class ItemUpdateView(FormView):
     )
     success_url = 'success'
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs: Any):
         context = super().get_context_data(**kwargs)
         context['item_formset'] = self.form_class()
         return context
@@ -36,10 +36,13 @@ class ItemUpdateView(FormView):
         formset = self.form_class(request.POST)
         print(formset)
         if formset.is_valid():
-            instance = formset.save()
+            instances = formset.save()
             messages.success(request, "Item Saved to database")
+            
+            # Create a new formset instance with the saved instances
+            formset = self.form_class(queryset=ItemModel.objects.filter(id__in=[instance.id for instance in instances]))
             # Redirect user to url after save
-            return redirect(request.path_info)
+            return render(request, self.template_name, {'formset': formset})
         else: 
             return self.render_to_response({'item_formset': formset})
 

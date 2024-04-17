@@ -10,7 +10,9 @@ db.sqlite3
 # VSCode #
 .vscode/*
 
-events/migrations/*
+intermediate/migrations/*
+!intermediate/migrations/__init__.py
+
 blog/
 bookstore/
 yachts/migrations/*

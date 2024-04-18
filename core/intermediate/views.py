@@ -38,11 +38,13 @@ class ItemUpdateView(FormView):
         if formset.is_valid():
             instances = formset.save()
             messages.success(request, "Item Saved to database")
-            
-            # Create a new formset instance with the saved instances
-            formset = self.form_class(queryset=ItemModel.objects.filter(id__in=[instance.id for instance in instances]))
+            # Create a new formset instance with only the saved instances
+            # formset = self.form_class(queryset=ItemModel.objects.filter(id__in=[instance.id for instance in instances]))
+            # To obtain all instances of the item object 
+            all_instances = ItemModel.objects.all()
+            formset = self.form_class(queryset=all_instances)
             # Redirect user to url after save
-            return render(request, self.template_name, {'formset': formset})
+            return render(request, self.template_name, {'item_formset': formset})
         else: 
             return self.render_to_response({'item_formset': formset})
 

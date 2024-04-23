@@ -10,31 +10,30 @@
       {% csrf_token %}
       {{ item_formset.management_form }}
       
-      {% for item_form in item_formset %}
-        
+        {% for item_form in item_formset %}
         <div>
             <table>
                 <thead>
                     <tr>
-                      <th scope="col">Form number</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Estimated Price</th>
-                      <th scope="col">Elapsed Time</th>
+                        <th scope="col">Form number</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Estimated Price</th>
+                        <th scope="col">Elapsed Time</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                      <th scope="row">{{ forloop.counter0 }}</th>
-                      <td>{{ item_form.name }}</td>
-                      <td>{{ item_form.estimated_price }}</td>
-                      <td>{{ item_form.elapsed_time }}</td>
+                     <tr>
+                        <th scope="row">{{ forloop.counter0 }}</th>
+                       <td>{{ item_form.name }}</td>
+                          <td>{{ item_form.estimated_price }}</td>
+                          <td>{{ item_form.elapsed_time_input }}</td>
                     </tr>   
                 </tbody>
             </table>
         </div>
         <hr>
-      {% endfor %}
-      <input type='submit' value="Submit item">
+        {% endfor %}
+        <input type='submit' value="Submit item">
     </form>
 </body>
 </html>

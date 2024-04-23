@@ -3,11 +3,15 @@ from django.shortcuts import get_object_or_404
 from .models import Intermediate, Object1, ItemModel
 from django import forms
 
-# Custom field typw which accepts hh:mm:ss or a float
+# Custom field type which accepts hh:mm:ss, int or float
 class DurationField(forms.Field):
     def to_python(self, value):
-        if value in forms.fields.EMPTY_VALUES:
+        if value in [None, '', []]:
             return None
+
+        # If it's already a float, assume it's in minutes
+        if isinstance(value, float):
+            return value * 60
 
         # If it's already a int, assume it's in seconds
         if isinstance(value, int):
@@ -26,12 +30,19 @@ class DurationField(forms.Field):
 
 # Create a custom form which 
 class ItemModelForm(forms.ModelForm):
-    elapsed_time = DurationField()
+    #elapsed_time_input = DurationField()
+    elapsed_time_input = forms.CharField(max_length=10)
 
     class Meta:
         model = ItemModel
-        fields = ['name', 'estimated_price', 'elapsed_time_seconds']
-        
+        fields = ['name', 'estimated_price', 'elapsed_time_input']
+
+    '''
+    def clean_elapsed_time_input(self):
+        seconds = self.cleaned_data.get('elapsed_time_input')
+        if seconds is None:
+            return None
+    '''  
 
 # Straightforward formset which handles multiple instances automatically generating a formset based on model
 # and form class

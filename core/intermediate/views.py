@@ -29,20 +29,28 @@ class ItemUpdateView(FormView):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context['item_formset'] = self.form_class()
+        context['item_formset'] = self.form_class(queryset=ItemModel.objects.none())
         return context
     
     def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
-        formset = self.form_class(request.POST)
-        print(formset)
+        formset = self.form_class(request.POST, request.FILES)
+        if not formset.is_valid():
+            print(formset.errors)
+        print(request.POST)
         if formset.is_valid():
-            # Process each form in the formset
-            for form in formset:
-                name = form.cleaned_data['name']
-                estimated_price = form.cleaned_data['estimated_price']
-                elapsed_time = form.cleaned_data['duration']
+            saved_instances = formset.save(commit=False)
+            for instance in saved_instances:
+                # Assign values to calculated fields
+                instance.elapsed_seconds = instance.elapsed_time_input.total_seconds()
+                instance.elapsed_minutes = instance.elapsed_seconds / 60
+                seconds = instance.elapsed_seconds
+                hours = seconds // 3600
+                minutes = (seconds % 3600) // 60
+                seconds = seconds % 60
+                instance.elapsed_hhmmss = '{:02}:{:02}:{:02}'.format(int(hours), int(minutes), int(seconds))
+                instance.save()
+            #formset.save_m2m()
             
-            instance = formset.save()
             messages.success(request, "Item Saved to database")
             # Redirect user to url after save
             return redirect(request.path_info)

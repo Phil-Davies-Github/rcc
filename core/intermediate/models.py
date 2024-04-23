@@ -6,6 +6,8 @@ from django.db import models
 class ItemModel(models.Model):
     name = models.CharField(max_length=100)
     estimated_price = models.IntegerField()
+    elapsed_time_seconds = models.IntegerField()
+    elapsed_time_minutes = models.FloatField()
 
 class Object1(models.Model):
     name = models.CharField(max_length = 100)

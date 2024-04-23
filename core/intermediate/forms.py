@@ -3,11 +3,44 @@ from django.shortcuts import get_object_or_404
 from .models import Intermediate, Object1, ItemModel
 from django import forms
 
-# Test ModelForm
+# Define ModelForm and fields to interact with
 class ItemModelForm(forms.ModelForm):
+    elapsed_time = forms.CharField(max_length=20, required=False)
+
     class Meta:
         model = ItemModel
-        fields = ['name', 'estimated_price']
+        fields = ['name', 'estimated_price', 'elapsed_time']
+
+    # Validation logic, Input conversion and additional fields
+    # These fields are not automatically saved to the database. 
+    # They are part of the forms cleaned data but not the model instance
+    def clean_elapsed_time(self):
+        elapsed_time = self.cleaned_data.get('elapsed_time')
+        if elapsed_time is None:
+            return None
+        
+        if isinstance(elapsed_time, int):
+            self.cleaned_data['elapsed_time_seconds'] = elapsed_time
+            self.cleaned_data['elapsed_time_minutes'] = elapsed_time / 60
+            return elapsed_time
+        
+        if isinstance(elapsed_time, float):
+            self.cleaned_data['elapsed_time_seconds'] = elapsed_time * 60
+            self.cleaned_data['elapsed_time_minutes'] = elapsed_time
+            return elapsed_time
+        
+        # Try parsing as hours:minutes:seconds
+        try:
+            parts = elapsed_time.split(":")
+            hours = int(parts[0])
+            minutes = int(parts[1])
+            seconds = int(parts[2])
+            total_seconds = hours * 3600 + minutes * 60 + seconds
+            self.cleaned_data['elapsed_time_seconds'] = total_seconds
+            self.cleaned_data['elapsed_time_minutes'] = total_seconds / 60
+            return total_seconds
+        except (ValueError, IndexError):
+            raise forms.ValidationError("Invalid duration format. Please use hh:mm:ss or seconds as a integer.")
 
 
 # Straightforward formset which handles multiple instances automatically generating a formset based on model

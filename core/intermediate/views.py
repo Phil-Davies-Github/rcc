@@ -40,22 +40,21 @@ class ItemUpdateView(FormView):
             for form in formset:
                 # get the instance to update from the model
                 instance = form.instance
-                if instance.pk:
+                if instance.pk: # if instance has a primary key
                     instance.elapsed_time_seconds = form.cleaned_data['elapsed_time_seconds'] 
                     instance.elapsed_time_minutes = form.cleaned_data['elapsed_time_minutes'] 
                     instance.save()
-                else:
-                    pass
-
+                
             messages.success(request, "Item Saved to database")
-            # Create a new formset instance with only the saved instances
+            # This creates a new formset instance with only the saved instances
             # formset = self.form_class(queryset=ItemModel.objects.filter(id__in=[instance.id for instance in instances]))
-            # To obtain all instances of the item object         
+            # To obtain all instances of the item object, fetch the data from the database        
             all_instances = ItemModel.objects.all()
+            formset_data = []
             formset = self.form_class(queryset=all_instances)
             
-            # Reconstruct the formset with the initial data
-            #formset = MyFormSet(initial=[{'custom_field': convert_model_field(instance.model_field)} for instance in instances])
+            # Reconstruct the formset with the elapsed time input data
+            formset = self.form_class(initial=[{'elapsed_time': instance.elapsed_time} for instance in all_instances])
             
             # Redirect user to url after save
             return render(request, self.template_name, {'item_formset': formset})

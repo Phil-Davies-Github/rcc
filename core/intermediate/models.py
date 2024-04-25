@@ -5,9 +5,9 @@ from django.db import models
 # Basic Test Model
 class ItemModel(models.Model):
     name = models.CharField(max_length=100)
-    estimated_price = models.IntegerField()
-    elapsed_time_seconds = models.IntegerField()
-    elapsed_time_minutes = models.FloatField()
+    handicap = models.IntegerField()
+    elapsed_time_seconds = models.IntegerField(null=True, blank=True)
+    elapsed_time_minutes = models.FloatField(null=True, blank=True)
 
 class Object1(models.Model):
     name = models.CharField(max_length = 100)

@@ -1,14 +1,11 @@
 from typing import Any
-from django.forms.forms import BaseForm
 from django.shortcuts import render
 from django.views.generic import FormView, ListView, TemplateView
-from django.views.generic.detail import SingleObjectMixin
-from intermediate.models import Intermediate, Object1, ItemModel
-from .forms import IntermediateModelForm, IntermediateFormSet, ItemModelForm
+from intermediate.models import EventRaceResult, RaceDetail, ItemModel
+from .forms import EventRaceResultsModelForm, ItemModelForm
 from django.forms import modelformset_factory, formset_factory
 from django.http import HttpRequest, HttpResponse
 from django.contrib import messages
-from django.shortcuts import redirect
 
 # Test Object View
 class DeleteItem(FormView):
@@ -22,7 +19,7 @@ class ItemUpdateView(FormView):
     form_class = modelformset_factory(
         ItemModel,
         form = ItemModelForm,
-        extra = 2
+        extra = 0
     )
     success_url = 'success'
 
@@ -50,11 +47,7 @@ class ItemUpdateView(FormView):
             # formset = self.form_class(queryset=ItemModel.objects.filter(id__in=[instance.id for instance in instances]))
             # To obtain all instances of the item object, fetch the data from the database        
             all_instances = ItemModel.objects.all()
-            formset_data = []
             formset = self.form_class(queryset=all_instances)
-            
-            # Reconstruct the formset with the elapsed time input data
-            formset = self.form_class(initial=[{'elapsed_time': instance.elapsed_time} for instance in all_instances])
             
             # Redirect user to url after save
             return render(request, self.template_name, {'item_formset': formset})
@@ -75,7 +68,7 @@ class Index(TemplateView):
     template_name='index.html'
 
 class IntermediateListView(ListView):
-    model=Intermediate
+    model=EventRaceResult
     template_name='intermediate_list.html'
 
     # Override the get_context_data so that relevant data can be retrieved from then database
@@ -87,39 +80,45 @@ class IntermediateListView(ListView):
         context = super().get_context_data(**kwargs)
        
         # Retrieve only unique items in queryset and pass to the context
-        unique_object2 = Intermediate.objects.values('object2_id').distinct()
+        unique_object2 = EventRaceResult.objects.values('object2_id').distinct()
         context['distinct_object2_instances'] = unique_object2
         
         # Only append the distinct instance of related_object2
         # by iterating through the Intermediate Object looking for the first instance of each distinct object2 
-        for intermediate_obj in Intermediate.objects.all():
+        for intermediate_obj in EventRaceResult.objects.all():
             object2_id = intermediate_obj.object2_id
             if object2_id not in seen_ids:
                 seen_ids.add(object2_id)
                 # Add to query
-                related_object2_instances.append(intermediate_obj.object2)
+                related_object2_instances.append(intermediate_obj.event_entries)
         # Pass related Object2 instances to context
         context['related_object2_instances'] = related_object2_instances
         return context
 
-class IntermediateUpdateView(FormView):
-    model = Intermediate
-    form_class = IntermediateModelForm
-    template_name='update_intermediate_form.html'
+class EventRaceResultsUpdateView(FormView):
+    # specify rendering template
+    template_name='update_event_race_results_form.html'
+    # Each form is associate with an instance of EventRaceResults
+    form_class = modelformset_factory(
+        EventRaceResult,
+        form = EventRaceResultsModelForm,
+        extra = 0
+    )
+    
     success_url='/success/'
 
-    # The view needs to render the intermediate field together with the related object1 name
-    # The following get_context override retrieves the querysets for both the intermediate instances 
-    # and the object1
+    # The view needs to render the EventRaceResults fields together with the related RaceDetail and EventEntries
+    # The following get_context override retrieves the querysets for the EventRaceResults and rekated RaceDetail 
+    # and EventEntries
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Extract the value of object2_id from the URL parameters
         object2_id = self.kwargs.get('object2_id')  
         # Extract multiple instances filtered by the value of object 2 
-        intermediate_queryset = Intermediate.objects.filter(object2_id=object2_id)
+        intermediate_queryset = EventRaceResult.objects.filter(object2_id=object2_id)
         # Get related object1 data
-        related_object1_instances = Object1.objects.filter(id__in=intermediate_queryset.values('object1_id'))
-        formset = IntermediateFormSet(queryset=intermediate_queryset)
+        related_object1_instances = RaceDetail.objects.filter(id__in=intermediate_queryset.values('object1_id'))
+        #formset = IntermediateFormSet(queryset=intermediate_queryset)
         # populate related object1 data in each form instance
         # define the form
         '''
@@ -129,7 +128,7 @@ class IntermediateUpdateView(FormView):
         for form, related_object1_instance in zip(formset, related_object1_instances):
             form.fields['object1_name'].initial = related_object1_instance.name if related_object1_instance else ""
         '''
-        context['formset'] = formset
+        #context['formset'] = formset
         #context['related_object1_instances'] = related_object1_instances
         return context
         

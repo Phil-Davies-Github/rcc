@@ -60,7 +60,11 @@ class EventRace(models.Model):
     handicap_applied = models.IntegerField(null=True)
     elapsed_time = models.CharField(max_length=20)
     elapsed_time_seconds = models.IntegerField(null=True, blank=True)
-    elapsed_time_minutes = models.FloatField(null=True, blank=True)
-    
+    elapsed_time_minutes = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=3)
+    corrected_time_seconds = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places= 3)
+    corrected_time_minutes = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places= 3)
+    position = models.SmallIntegerField(null=True, blank=True)
+    points = models.SmallIntegerField(null=True, blank=True)
+
     def __str__(self):
         return f"{self.event_entry.event.name}[{self.event_entry.event.date.year}] {self.race.name} - ({self.event_entry.yacht.sail_number}) {self.event_entry.yacht.name}"

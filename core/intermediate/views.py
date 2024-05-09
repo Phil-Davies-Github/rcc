@@ -1,5 +1,5 @@
 from typing import Any
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.generic import FormView, ListView, TemplateView
 from intermediate.models import EventRace, Race, ItemModel
 from .forms import EventRaceModelForm, ItemModelForm
@@ -41,6 +41,7 @@ class ItemUpdateView(FormView):
                 if instance.pk: # if instance has a primary key
                     instance.elapsed_time_seconds = form.cleaned_data['elapsed_time_seconds'] 
                     instance.elapsed_time_minutes = form.cleaned_data['elapsed_time_minutes'] 
+                    instance.corrected_time_seconds = form.cleaned_data['corrected_time_seconds']
                     instance.save()
                 
             messages.success(request, "Item Saved to database")
@@ -97,6 +98,8 @@ class IntermediateListView(ListView):
         return context
 
 class EventRaceUpdateView(FormView):
+    # class scoped varaiables
+    race_id = 0
     # specify rendering template
     template_name='update_event_race_results_form.html'
     # Each form is associate with an instance of EventRaceResults
@@ -112,20 +115,20 @@ class EventRaceUpdateView(FormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         #kwargs['race_id'] = self.kwargs['race_id']
-        race_id = self.kwargs['race_id']
+        self.race_id = self.kwargs['race_id']
         # Get the RaceDetail for the specific instance
-        event_race = Race.objects.get(id = race_id)
+        event_race = Race.objects.get(id = self.race_id)
         # Retrieve all event entries associated with the race 
         entries = EventEntry.objects.filter(event_id=event_race.event_id)
         # Check each entry and add to the EventRace table if missing
         for entry in entries:
             # Retrieve handicap associated with the entered yacht
             yacht = entry.yacht
-            # Get the handicap instance for the yacth and initialise the handicap applied field
+            # Get the handicap instance for the yacht and initialise the handicap applied field
             handicap = Handicap.objects.get(yacht=yacht)
             race_entry, created = EventRace.objects.get_or_create(
-                race_id=race_id, 
-                event_entry_id=entry.id,
+                race_id = self.race_id, 
+                event_entry_id = entry.id,
                 defaults={'handicap_applied': handicap.current_handicap}, 
             )
 
@@ -140,9 +143,9 @@ class EventRaceUpdateView(FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Extract the value of race_id from the URL parameters
-        race_id = self.kwargs.get('race_id')  
+        #race_id = self.kwargs.get('race_id')  
         # Extract entries from the event_race 
-        queryset = EventRace.objects.filter(race_id=race_id)
+        queryset = EventRace.objects.filter(race_id=self.race_id)
         Formset = self.get_form_class()
         if self.request.method == 'POST':
             context['formset'] = Formset(self.request.POST, queryset=queryset)
@@ -151,50 +154,44 @@ class EventRaceUpdateView(FormView):
         return context
     
     def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        race_id = self.kwargs['race_id']
         formset = self.form_class(request.POST, request.FILES)
+
         if formset.is_valid():
-            #loop through and extract the first race_id
-            formset.save()
-        
-        all_instances = ItemModel.objects.all()
-        formset = self.form_class(queryset=all_instances)
+            # Process Buttons
+            if 'save' in request.POST:
+                for form in formset:
+                    #if form.has_changed():
+                        # get the instance
+                        instance = form.instance
+                        if instance.pk: # if instance has a primary key save
+                            instance.elapsed_time_seconds = form.cleaned_data['elapsed_time_seconds'] 
+                            instance.elapsed_time_minutes = form.cleaned_data['elapsed_time_minutes'] 
+                            instance.handicap_applied = form.cleaned_data['handicap_applied'] 
+                            # Calculate Corrected Time 
+                            handicap_applied = form.cleaned_data.get('handicap_applied')
+                            instance.corrected_time_seconds = instance.elapsed_time_seconds * (1 + float(handicap_applied)/100) 
+                            instance.corrected_time_minutes = instance.corrected_time_seconds / 60
+                            instance.save()
+                # re-load the updated data from the database
+                race_instances = EventRace.objects.filter(race_id = race_id)
+                formset = self.form_class(queryset=race_instances)
+                # Redirect user to url after save
+                return render(request, self.template_name, {'formset': formset}) 
+            elif 'results' in request.POST:
+                # redirect to results
+                return redirect('results.html')   
             
-        # Redirect user to url after save
-        return render(request, self.template_name, {'formset': formset})        
-        #return self.render_to_response({'formset': formset})
-
+             
     # Called when form is submitted and passes validation
     def form_valid(self, form):
         form.save()
         # Redirect or show success message
         return super().form_valid(form)
-    '''
-    def post(self, request, *args, **kwargs):
-        # get object we want to work with
-        self.object = self.get_object(queryset=Intermediate.objects.all)
-        return super().post(request, *args, **kwargs)
-
-    def get_form(self, form_class=None):
-        return IntermediateFormSet(**self.get_form_kwargs(), instance=self.object)
-    '''
-   
     
-    # Get keyword arguments that will be passed to the form class
 
-
-
-    '''
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['object2_id'] = self.kwargs['object2_id']
-        return kwargs
-
-    # Called when form is submitted and passes validation
-    def form_valid(self, form):
-        form.save()
-        # Redirect or show success message
-        return super().form_valid(form)
-    '''
+    
+    
 
 # Function Based Views
 def submit_view(request):

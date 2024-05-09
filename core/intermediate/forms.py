@@ -75,6 +75,14 @@ class EventRaceModelForm(forms.ModelForm):
             instance.save()
         return instance
 
+    def clean_handicap_applied(self):
+        handicap_applied = self.cleaned_data.get('handicap_applied')
+
+        if handicap_applied is None:
+            # No submitted value, use the initial value
+            handicap_applied = self.initial.get('handicap_applied')
+        return handicap_applied
+    
     # Called as part of is_valid(). Validation logic, Elapsed time input conversion to seconds and minutes.
     # The additional form fields are not automatically saved to the database. 
     # They are become part of the forms cleaned data but not the model instance
@@ -85,13 +93,12 @@ class EventRaceModelForm(forms.ModelForm):
         if elapsed_time_string is None:
             return None
         
-        if '.' in elapsed_time_string:
+        elif '.' in elapsed_time_string:
             elapsed_seconds = int(float(elapsed_time_string) * 60)
             self.cleaned_data['elapsed_time_seconds'] = elapsed_seconds
             self.cleaned_data['elapsed_time_minutes'] = float(elapsed_time_string)
-            return elapsed_time_string
-
-        if ':' in elapsed_time_string:
+            
+        elif ':' in elapsed_time_string:
             # Try parsing as hours:minutes:seconds
             try:
                 parts = elapsed_time_string.split(":")
@@ -105,10 +112,12 @@ class EventRaceModelForm(forms.ModelForm):
             except (ValueError, IndexError):
                 raise forms.ValidationError("Invalid duration format. Please check the format i.e. hh:mm:ss or mm.mm or ss")
 
-        # if not hh:mm:ss or float assume seconds   
-        elapsed_seconds = int(elapsed_time_string)
-        self.cleaned_data['elapsed_time_seconds'] = elapsed_seconds
-        self.cleaned_data['elapsed_time_minutes'] = (float(elapsed_time_string) / 60)
+        elif elapsed_time_string.isdigit(): 
+            # if just contains digits then assumed to be int   
+            elapsed_seconds = int(float(elapsed_time_string))
+            self.cleaned_data['elapsed_time_seconds'] = elapsed_seconds
+            self.cleaned_data['elapsed_time_minutes'] = (float(elapsed_time_string) / 60)
+        
         return elapsed_time_string
 
 '''

@@ -1,0 +1,38 @@
+{% block content %}
+    
+    {% if results %}
+        <h3>Results for {{ results.0.yacht.event_entry.event.name }} - {{ results.0.yacht.race.name }}</h3>
+        <hr>
+        <table>
+            <thead>
+                <tr>
+                    <th>Position</th>
+                    <th>Sail Number</th>
+                    <th>Name</th>
+                    <th>Handicap</th>
+                    <th>Corrected Time</th>
+                    <th>Elapsed Time</th>
+                    <th>Margin</th>
+                    <th>H/C Change to Win</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                {% for result in results %}
+                    <tr>
+                        <td>{{ result.position }}</td>
+                        <td>{{ result.yacht.event_entry.yacht.sail_number }}</td>
+                        <td>{{ result.yacht.event_entry.yacht.name }}</td>
+                        <td>{{ result.yacht.handicap_applied }}</td>
+                        <td>{{ result.yacht.corrected_time_minutes }}</td>
+                        <td>{{ result.yacht.elapsed_time_minutes }}</td>
+                        <td>{{ result.margin }}</td>
+                        <td>{{ result.hcw }}</td>
+                    </tr>
+                {% endfor%}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No Race found.</p>
+    {% endif %}
+{% endblock content %}

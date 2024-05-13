@@ -4,9 +4,10 @@ from django.views.generic import FormView, ListView, TemplateView
 from intermediate.models import EventRace, Race, ItemModel
 from .forms import EventRaceModelForm, ItemModelForm
 from django.forms import modelformset_factory, formset_factory
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from .models import EventEntry, Handicap
+from django.urls import reverse
 
 # Test Object View
 class DeleteItem(FormView):
@@ -74,7 +75,6 @@ class IntermediateListView(ListView):
     template_name='intermediate_list.html'
 
     # Override the get_context_data so that relevant data can be retrieved from then database
-
     def get_context_data(self, **kwargs):
         related_object2_instances = []
         seen_ids = set()
@@ -95,6 +95,48 @@ class IntermediateListView(ListView):
                 related_object2_instances.append(intermediate_obj.event_entries)
         # Pass related Object2 instances to context
         context['related_object2_instances'] = related_object2_instances
+        return context
+
+class EventRaceResultsListView(ListView):
+    model=EventRace
+    template_name='list_event_race_results.html'
+
+    # Determine positions
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        #kwargs['race_id'] = self.kwargs['race_id']
+        self.race_id = self.kwargs['race_id']
+        # Get the Event Race Detail for the specific instance
+        event_race = EventRace.objects.get(id = self.race_id)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        race_id = self.kwargs['race_id']
+        # arrange fastest first then assign a position and margin
+        yacht_result = EventRace.objects.filter(race_id = race_id).order_by('corrected_time_minutes')
+        results = []
+        for position, yacht in enumerate(yacht_result, start=1):
+            # Calculate the handicap margin between yachts up the last yacht
+            if position < yacht_result.count():               
+                handicap_margin = round((yacht_result[position].corrected_time_seconds/yacht.elapsed_time_seconds -1) * 100-yacht.handicap_applied, 2)
+            else:
+                handicap_margin = 0
+            
+            # Calculate Handicap Change to Win
+            if position == 1:
+                handicap_change_to_win = 0
+            else:
+                # Take the time of the wining yacht and calcuate the handicap required to match this time
+                handicap_change_to_win = round(((yacht_result[0].corrected_time_seconds/yacht.elapsed_time_seconds-1) * 100 - yacht.handicap_applied) * -1, 1)
+            
+            results.append({
+                'yacht' : yacht,
+                'position' : position,
+                'margin' : handicap_margin,
+                'hcw' : handicap_change_to_win
+            })   
+        
+        context['results'] = results
         return context
 
 class EventRaceUpdateView(FormView):
@@ -138,7 +180,7 @@ class EventRaceUpdateView(FormView):
     # The following get_context override retrieves the querysets for the EventRaceResults and rekated RaceDetail 
     # and EventEntries
 
-    # Potential Issue - This binds a queryset directly, but Django typically binds 
+    # This binds a queryset directly, but Django typically binds 
     # formsets to a dictionary object. Typically, a data is bound in a POST or GET Request
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -161,7 +203,7 @@ class EventRaceUpdateView(FormView):
             # Process Buttons
             if 'save' in request.POST:
                 for form in formset:
-                    #if form.has_changed():
+                    if form.has_changed():
                         # get the instance
                         instance = form.instance
                         if instance.pk: # if instance has a primary key save
@@ -179,8 +221,10 @@ class EventRaceUpdateView(FormView):
                 # Redirect user to url after save
                 return render(request, self.template_name, {'formset': formset}) 
             elif 'results' in request.POST:
-                # redirect to results
-                return redirect('results.html')   
+                               
+                # redirect to results list view
+                url = reverse('intermediate:list_event_race_results', kwargs = {'race_id': race_id})
+                return HttpResponseRedirect(url)  
             
              
     # Called when form is submitted and passes validation

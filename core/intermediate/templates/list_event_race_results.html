@@ -1,7 +1,7 @@
 {% block content %}
     
     {% if results %}
-        <h3>Results for {{ results.0.yacht.event_entry.event.name }} - {{ results.0.yacht.race.name }}</h3>
+        <h3>Results for {{ results.0.event_race.event_entry.event.name }} - {{ results.0.event_race.race.name }}</h3>
         <hr>
         <table>
             <thead>
@@ -21,13 +21,13 @@
                 {% for result in results %}
                     <tr>
                         <td>{{ result.position }}</td>
-                        <td>{{ result.yacht.event_entry.yacht.sail_number }}</td>
-                        <td>{{ result.yacht.event_entry.yacht.name }}</td>
-                        <td>{{ result.yacht.handicap_applied }}</td>
-                        <td>{{ result.yacht.corrected_time_minutes }}</td>
-                        <td>{{ result.yacht.elapsed_time_minutes }}</td>
+                        <td>{{ result.event_race.event_entry.yacht.sail_number }}</td>
+                        <td>{{ result.event_race.event_entry.yacht.name }}</td>
+                        <td>{{ result.event_race.handicap_applied }}</td>
+                        <td>{{ result.event_race.corrected_time_minutes }}</td>
+                        <td>{{ result.event_race.elapsed_time_minutes }}</td>
                         <td>{{ result.margin }}</td>
-                        <td>{{ result.hcw }}</td>
+                        <td>{{ result.handicap_change_to_win }}</td>
                     </tr>
                 {% endfor%}
             </tbody>

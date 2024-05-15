@@ -1,7 +1,7 @@
 from typing import Any
 from django.shortcuts import redirect, render
 from django.views.generic import FormView, ListView, TemplateView
-from intermediate.models import EventRace, Race, ItemModel
+from intermediate.models import EventRace, Race, ItemModel, EventResult
 from .forms import EventRaceModelForm, ItemModelForm
 from django.forms import modelformset_factory, formset_factory
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -57,9 +57,7 @@ class ItemUpdateView(FormView):
         else: 
             return self.render_to_response({'item_formset': formset})
 
-
     def form_valid(self, form):
-        
         return super().form_valid(form)
     
     # Rerender the form with error
@@ -69,6 +67,10 @@ class ItemUpdateView(FormView):
 # Create your views here.
 class Index(TemplateView):
     template_name='index.html'
+
+class EventResultsListView(ListView):
+    model = EventResult
+    template_name = 'list_event_results.html'
 
 class IntermediateListView(ListView):
     model=EventRace
@@ -115,27 +117,35 @@ class EventRaceResultsListView(ListView):
         # arrange fastest first then assign a position and margin
         yacht_result = EventRace.objects.filter(race_id = race_id).order_by('corrected_time_minutes')
         results = []
-        for position, yacht in enumerate(yacht_result, start=1):
+        for position, event_race in enumerate(yacht_result, start=1):
             # Calculate the handicap margin between yachts up the last yacht
             if position < yacht_result.count():               
-                handicap_margin = round((yacht_result[position].corrected_time_seconds/yacht.elapsed_time_seconds -1) * 100-yacht.handicap_applied, 2)
+                handicap_margin = round((yacht_result[position].corrected_time_seconds/event_race.elapsed_time_seconds -1) * 100-event_race.handicap_applied, 2)
             else:
                 handicap_margin = 0
-            
             # Calculate Handicap Change to Win
             if position == 1:
                 handicap_change_to_win = 0
             else:
                 # Take the time of the wining yacht and calcuate the handicap required to match this time
-                handicap_change_to_win = round(((yacht_result[0].corrected_time_seconds/yacht.elapsed_time_seconds-1) * 100 - yacht.handicap_applied) * -1, 1)
+                handicap_change_to_win = round(((yacht_result[0].corrected_time_seconds/event_race.elapsed_time_seconds-1) * 100 - event_race.handicap_applied) * -1, 1)
             
+            # Did the yacht take a penalty?
+            penalty = False
+
             results.append({
-                'yacht' : yacht,
+                'event' : event_race.event_entry.event,
+                'race' : event_race.race,
+                'event_race' : event_race,
+                'penalty' : penalty,
                 'position' : position,
+                'points' : position,
                 'margin' : handicap_margin,
-                'hcw' : handicap_change_to_win
+                'handicap_change_to_win' : handicap_change_to_win
             })   
-        
+        # now write the results table
+        for result in results:
+            race_result, created = EventResult.objects.get_or_create(**result)
         context['results'] = results
         return context
 
@@ -221,7 +231,6 @@ class EventRaceUpdateView(FormView):
                 # Redirect user to url after save
                 return render(request, self.template_name, {'formset': formset}) 
             elif 'results' in request.POST:
-                               
                 # redirect to results list view
                 url = reverse('intermediate:list_event_race_results', kwargs = {'race_id': race_id})
                 return HttpResponseRedirect(url)  

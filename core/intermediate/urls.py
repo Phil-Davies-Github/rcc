@@ -17,4 +17,5 @@ urlpatterns = [
     path('event_race/<int:race_id>/update/', views.EventRaceUpdateView.as_view(), name='update_event_race_results'),  
     #Test Patterns
     path('event_race/<int:race_id>/results/', views.EventRaceResultsListView.as_view(), name='list_event_race_results'),  
+    path('event/<int:event_id>/results/', views.EventResultsListView.as_view(), name='list_event_results'), 
 ]

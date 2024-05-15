@@ -19,6 +19,9 @@ class Yacht(models.Model):   # Define physical characteristics of a yacht
     
     def __str__(self):
         return f"{self.sail_number} - {self.name}"
+
+class Analytics(models.Model):
+    pass
     
 class Handicap(models.Model): # Define the dynamic characteristics of the yacht
     yacht = models.ForeignKey(Yacht, on_delete=models.CASCADE)
@@ -63,8 +66,17 @@ class EventRace(models.Model):
     elapsed_time_minutes = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=3)
     corrected_time_seconds = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places= 3)
     corrected_time_minutes = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places= 3)
-    position = models.SmallIntegerField(null=True, blank=True)
-    points = models.SmallIntegerField(null=True, blank=True)
-
+    
     def __str__(self):
         return f"{self.event_entry.event.name}[{self.event_entry.event.date.year}] {self.race.name} - ({self.event_entry.yacht.sail_number}) {self.event_entry.yacht.name}"
+
+# A self contained Model which contains only the published results
+class EventResult(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    race = models.ForeignKey(Race, on_delete=models.CASCADE)
+    position = models.SmallIntegerField(null=True, blank=True)
+    points = models.SmallIntegerField(null=True, blank=True)
+    margin = models.FloatField()
+    handicap_change_to_win = models.FloatField()
+    penalty = models.BooleanField()
+    event_race = models.ForeignKey(EventRace, on_delete=models.CASCADE)

@@ -1,55 +1,15 @@
 #from django.forms import ModelForm, BaseInlineFormSet, modelformset_factory
 from django.shortcuts import get_object_or_404
-from . import models
+from .models import models
 from django import forms
 
 # Define ModelForm and fields to interact with
-class ItemModelForm(forms.ModelForm):
-    class Meta:
-        model = models.ItemModel
-        fields = ['name', 'handicap', 'elapsed_time_input']
 
-    # Validation logic, Input conversion and additional fields
-    # These fields are not automatically saved to the database. 
-    # They are part of the forms cleaned data but not the model instance
-    # add to the model date in the view
-    def clean_elapsed_time_input(self):
-        elapsed_time_string = self.cleaned_data.get('elapsed_time_input')
-
-        if elapsed_time_string is None:
-            return None
-        
-        if '.' in elapsed_time_string:
-            elapsed_seconds = int(float(elapsed_time_string) * 60)
-            self.cleaned_data['elapsed_time_seconds'] = elapsed_seconds
-            self.cleaned_data['elapsed_time_minutes'] = float(elapsed_time_string)
-            return elapsed_time_string
-
-        if ':' in elapsed_time_string:
-            # Try parsing as hours:minutes:seconds
-            try:
-                parts = elapsed_time_string.split(":")
-                hours = int(parts[0])
-                minutes = int(parts[1])
-                seconds = int(parts[2])
-                total_seconds = hours * 3600 + minutes * 60 + seconds
-                self.cleaned_data['elapsed_time_seconds'] = total_seconds
-                self.cleaned_data['elapsed_time_minutes'] = total_seconds / 60
-                return elapsed_time_string
-            except (ValueError, IndexError):
-                raise forms.ValidationError("Invalid duration format. Please check the format i.e. hh:mm:ss or mm.mm or ss")
-
-        # if not hh:mm:ss or float assume seconds   
-        elapsed_seconds = int(elapsed_time_string)
-        self.cleaned_data['elapsed_time_seconds'] = elapsed_seconds
-        self.cleaned_data['elapsed_time_minutes'] = (float(elapsed_time_string) / 60)
-        return elapsed_time_string
         
 # Straightforward formset which handles multiple instances automatically generating a formset based on model
 # and form class
 # Define EventRace Intermediate model and fields to interact with
-class EventRaceModelForm(forms.ModelForm):
-        
+class EventRaceModelForm(forms.ModelForm):    
     class Meta:
         model = models.EventRace
         fields = ['elapsed_time', 'handicap_applied', ]

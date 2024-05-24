@@ -15,8 +15,9 @@ class Yacht(models.Model):
         return f"{self.sail_number} - {self.name}"
     
 class Handicap(models.Model):
-    yacht = models.ForeignKey(Yacht, on_delete=models.CASCADE)
-    status = models.CharField(
+    sail_number = models.PositiveSmallIntegerField(primary_key = True)
+    current_handicap = models.SmallIntegerField()
+    current_status = models.CharField(
         max_length=12, 
         choices=[
             ('Provisional','Provisional'),
@@ -25,7 +26,6 @@ class Handicap(models.Model):
         ], 
         default='Provisional'
     )
-    current_handicap = models.SmallIntegerField()
     reason_for_change = models.CharField(max_length=80)
     amended_by = models.CharField(max_length=80)
     updated = models.DateField(auto_now=True)

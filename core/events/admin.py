@@ -7,7 +7,11 @@ class EventsAdminArea(admin.AdminSite):
     site_header='Events Admin Area'
 
 # Reference the class
-events_admin_site = EventsAdminArea(name='EventsAdmin')
+events_admin = EventsAdminArea(name='EventsAdmin')
+
+events_admin.site_header = "RCC Events Admin Area"
+events_admin.site_title = "RCC Events Admin Portal"
+events_admin.index_title = "Welcome to RCC Events Portal"
 
 # Define a custom form for the RecurringEvent model
 class RecurringEventForm(forms.ModelForm):
@@ -99,10 +103,10 @@ class EventRaceAdmin(admin.ModelAdmin):
     )
 
 # Register your models here.
-events_admin_site.register(models.Race)
-events_admin_site.register(models.RecurringEvent, RecurringEventFormAdmin)
-events_admin_site.register(models.Year, YearFormAdmin)
-events_admin_site.register(models.Event, EventAdmin)
-events_admin_site.register(models.EventEntry, EventEntryFormAdmin)
-events_admin_site.register(models.EventRace, EventRaceAdmin)
-events_admin_site.register(models.EventOverallRaceResult)
+events_admin.register(models.Race)
+events_admin.register(models.RecurringEvent, RecurringEventFormAdmin)
+events_admin.register(models.Year, YearFormAdmin)
+events_admin.register(models.Event, EventAdmin)
+events_admin.register(models.EventEntry, EventEntryFormAdmin)
+events_admin.register(models.EventRace, EventRaceAdmin)
+events_admin.register(models.EventOverallRaceResult)

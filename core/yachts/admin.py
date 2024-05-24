@@ -7,7 +7,11 @@ class YachtsAdminArea(admin.AdminSite):
     site_header='Yachts Admin Area'
 
 # Instantiate Events Object here.
-yachts_admin_site = YachtsAdminArea(name='YachtsAdmin')
+yachts_admin = YachtsAdminArea(name='YachtsAdmin')
+
+yachts_admin.site_header = "RCC Yachts Admin Area"
+yachts_admin.site_title = "RCC Yachts Admin Portal"
+yachts_admin.index_title = "Welcome to RCC Yachts Portal"
 
 class YachtAdmin(admin.ModelAdmin):
     pass
@@ -81,5 +85,5 @@ class HandicapAdmin(admin.ModelAdmin):
         return form
     '''
        
-yachts_admin_site.register(Yacht, YachtAdmin)
-yachts_admin_site.register(Handicap, HandicapAdmin)
+yachts_admin.register(Yacht, YachtAdmin)
+yachts_admin.register(Handicap, HandicapAdmin)

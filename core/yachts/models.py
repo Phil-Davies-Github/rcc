@@ -15,7 +15,7 @@ class Yacht(models.Model):
         return f"{self.sail_number} - {self.name}"
     
 class Handicap(models.Model):
-    sail_number = models.PositiveSmallIntegerField(primary_key = True)
+    yacht = models.ForeignKey(Yacht, on_delete=models.CASCADE)
     current_handicap = models.SmallIntegerField()
     current_status = models.CharField(
         max_length=12, 
@@ -49,8 +49,11 @@ def pre_save_handicap(sender, instance, **kwargs):
     try:
         original_instance = Handicap.objects.get(pk=instance.pk)
     except Handicap.DoesNotExist:
-        return  # The original instance doesn't exist, so it's likely a new object
+        instance.last_handicap = 0
+        instance.last_status = "New Entry"
+        return  # The original instance doesn't exist, so it's a new object
     # Check if the instance has already been saved and store the last status and handicap (i.e., it's an update)
+    # else its a new entry
     if instance.pk:
         instance.last_handicap = original_instance.current_handicap    
         instance.last_status = original_instance.status

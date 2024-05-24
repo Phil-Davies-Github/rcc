@@ -65,7 +65,7 @@ class HandicapForm(forms.ModelForm):
 
 class HandicapAdmin(admin.ModelAdmin):
     #form = HandicapAdminForm
-    list_display = ['yacht', 'current_handicap', 'status', 'reason_for_change', 'amended_by', 'updated']
+    list_display = ['yacht', 'current_handicap', 'current_status', 'reason_for_change', 'amended_by', 'updated']
     
     '''
     def get_form(self, request, obj=None, **kwargs):

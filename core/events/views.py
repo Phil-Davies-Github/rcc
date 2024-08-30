@@ -5,16 +5,31 @@ from django.views.generic import FormView, ListView, TemplateView
 from events.models import models
 from events.forms import EventRaceModelForm
 from django.forms import modelformset_factory
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.contrib import messages
+from django.http import JsonResponse, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
+# Provide an API to integrate with wordpress
+from events.serialisers import YearSerialiser, EventSerialiser
+from rest_framework import generics, views, status
+from json import JSONDecodeError
+from rest_framework.response import Response
+
+# Define endpoint by creating an API for the year class
+class YearListAPIView(generics.ListAPIView):
+    # overrides
+    queryset = models.Year.objects.all()
+    serializer_class = YearSerialiser
+
+class YearEventAPIView(generics.ListAPIView):
+    serializer_class = EventSerialiser
+    def get_queryset(self):
+        year = self.kwargs['year']
+        return models.Event.objects.filter(year=year)   
 
 # Create your views here.
 class Index(TemplateView):
     template_name='index.html'
 
 # Event Views
-
 class YearsListView(ListView):
     # overrides
     model = models.Year

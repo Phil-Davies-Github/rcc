@@ -1,0 +1,18 @@
+
+{% extends 'main.html' %}
+
+
+{% block content %}
+<h1>Year List</h1>
+
+{% if year_list %}
+    {% for year in year_list %}
+        <li class ="list-group-item">
+            <a class="text-reset" href="{% url 'events:events' year=year.year %}">{{year.year}}</a>
+        </li>
+    {% endfor %}
+{% else %}
+    <p>There are no years to display</p>
+{% endif %}
+
+{% endblock %}

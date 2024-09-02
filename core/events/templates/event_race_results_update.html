@@ -1,0 +1,49 @@
+{% block content %}
+  {% if messages %}
+  <ul class="messages">
+  {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+  {% endfor %}
+  </ul>
+{% endif %}
+  <form method="post" enctype="multipart/form-data"> 
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <h3>{{ formset.0.instance.race.name}} - {{formset.0.instance.event_entry.event.name}}
+    <hr>
+    <table>
+      <thead>
+        <tr>
+          <th>Sail Number</th>
+          <th>Name</th>
+          <th>Helm</th>
+          <th>Handicap</th>
+          <th>Elapsed Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for form in formset %}
+          {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+          {% endfor %}
+          {% if form.errors %}
+            <div class="alert alert-danger">
+              {{ form.errors }}
+            </div>
+          {% endif %}
+          <tr>
+            <td>{{ form.instance.event_entry.yacht.sail_number }}</td>
+            <td>{{ form.instance.event_entry.yacht.name }}</td>
+            <td>Helm Name</td>
+            <td>{{ form.handicap_applied }}</td>
+            <td>{{ form.elapsed_time }}</td>
+          </tr>
+          
+        {% endfor %}
+      </tbody>
+    </table>
+    <hr>
+    <input type="submit" name="save" value="Save Changes">
+    <input type="submit" name="results" value="Calculate Positions">
+  </form>
+{% endblock content %}
